@@ -108,4 +108,31 @@ class CertificateRequestSignerTest extends TestCase
             $csrResult
         );
     }
+
+    public function testSignCertificateRequestOmitsCommonNameWhenTooLong()
+    {
+        $dummyDistinguishedName = new DistinguishedName(
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaacme.com',
+            'FR', 'france', 'Paris', 'acme', 'IT', 'qa@acmephp.com', []
+        );
+        $dummyKeyPair = (new KeyPairGenerator())->generateKeyPair(new RsaKeyOption(1024));
+
+        $result = $this->service->signCertificateRequest(
+            new CertificateRequest($dummyDistinguishedName, $dummyKeyPair)
+        );
+        $this->assertIsString($result);
+        $this->assertStringContainsString('-----BEGIN CERTIFICATE REQUEST-----', $result);
+        $csrResult = openssl_csr_get_subject($result, false);
+        $this->assertSame(
+            [
+                'countryName' => 'FR',
+                'stateOrProvinceName' => 'france',
+                'localityName' => 'Paris',
+                'organizationName' => 'acme',
+                'organizationalUnitName' => 'IT',
+                'emailAddress' => 'qa@acmephp.com',
+            ],
+            $csrResult
+        );
+    }
 }
