@@ -130,6 +130,10 @@ class AcmeClient implements AcmeClientInterface
             $authorizationsResponse = $client->request('POST', $authorizationEndpoint, $client->signKidPayload($authorizationEndpoint, $this->getResourceAccount(), null));
             $domain = (empty($authorizationsResponse['wildcard']) ? '' : '*.').$authorizationsResponse['identifier']['value'];
             foreach ($authorizationsResponse['challenges'] as $challenge) {
+                if (!isset($challenge['token'])) {
+                    continue;
+                }
+
                 $authorizationsChallenges[$domain][] = $this->createAuthorizationChallenge($authorizationsResponse['identifier']['value'], $challenge);
             }
         }
@@ -152,6 +156,10 @@ class AcmeClient implements AcmeClientInterface
             $authorizationsResponse = $client->request('POST', $authorizationEndpoint, $client->signKidPayload($authorizationEndpoint, $this->getResourceAccount(), null));
             $domain = (empty($authorizationsResponse['wildcard']) ? '' : '*.').$authorizationsResponse['identifier']['value'];
             foreach ($authorizationsResponse['challenges'] as $challenge) {
+                if (!isset($challenge['token'])) {
+                    continue;
+                }
+
                 $authorizationsChallenges[$domain][] = $this->createAuthorizationChallenge($authorizationsResponse['identifier']['value'], $challenge);
             }
         }
